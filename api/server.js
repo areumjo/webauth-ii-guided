@@ -1,15 +1,32 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const session = require('express-session');
 
 const authRouter = require('../auth/auth-router.js');
 const usersRouter = require('../users/users-router.js');
 
 const server = express();
 
+const sessionConfig = {
+  name: 'trackpad life', // sessionid (sid)
+  // THIS SHOULD NOT BE HARD CODED IN <- save in env
+  secret: 'lambdasecret', 
+  cookie: {
+    maxAge: 1000 * 60 * 60, // 1 hour
+    secure: false,
+    httpOnly: true // the browser can't access via JS
+  },
+  resave: false,
+  saveUninitialized: false // GDPR law !important
+}
+// if you restart the server, the session/cookie are not valid bc session is stroed at server 
+// deleting cookie does not remove session as well, the session will be still in the server
+
 server.use(helmet());
 server.use(express.json());
 server.use(cors());
+server.use(session(sessionConfig));
 
 server.use('/api/auth', authRouter);
 server.use('/api/users', usersRouter);
